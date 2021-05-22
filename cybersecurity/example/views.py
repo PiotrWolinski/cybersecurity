@@ -23,7 +23,7 @@ def login_view(request):
         return render(request, 'example/login.html', {'form': form})
 
     if request.method == 'POST':
-        form1 = AuthenticationForm(request.POST)
+        form1 = AuthenticationForm(data=request.POST)
         print('Validating')
         if form1.is_valid():
             username = form1.cleaned_data.get('username')
