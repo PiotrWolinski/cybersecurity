@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.decorators import login_required, permission_required
 
 from .forms import TodoForm
 from .models import Todo
@@ -43,6 +44,9 @@ def login_view(request):
     return redirect('login_view')
 
 def register(request):
+    if request.user.is_authenticated:   
+        return redirect('tasks')
+
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
@@ -57,11 +61,13 @@ def register(request):
         form = UserCreationForm()
     return render(request, 'example/register.html', {'form': form})
 
+@login_required(login_url='index')
 def logout_request(request):
     logout(request)
 
     return redirect('index')
 
+@login_required(login_url='index')
 def tasks(request):
     items = Todo.objects.order_by('-date')
 
@@ -69,7 +75,7 @@ def tasks(request):
         form = TodoForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('todo')
+            return redirect('tasks')
     
     form = TodoForm()
 
@@ -85,4 +91,4 @@ def remove(request, item_id):
     item = Todo.objects.get(id=item_id)
     item.delete()
     messages.info(request, "item removed !!!")
-    return redirect('todo')
+    return redirect('tasks')
