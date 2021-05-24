@@ -8,3 +8,8 @@ class Todo(models.Model):
 
     def __str__(self):
         return self.title
+
+    class Meta:
+        permissions = [
+            ('can_enter_admin_panel', 'Can enter admin panel'),
+            ]

@@ -1,3 +1,4 @@
+from django.http.request import RAISE_ERROR
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib import messages
@@ -9,7 +10,6 @@ from .forms import TodoForm
 from .models import Todo
 
 def index(request):
-
     if request.user.is_authenticated:
         return redirect('tasks')
 
@@ -25,17 +25,13 @@ def login_view(request):
 
     if request.method == 'POST':
         form1 = AuthenticationForm(data=request.POST)
-        print('Validating')
         if form1.is_valid():
             username = form1.cleaned_data.get('username')
             raw_password = form1.cleaned_data.get('password')
             user = authenticate(username=username, password=raw_password)
-            print(user)
             if user is not None:
                 login(request, user)
                 return redirect('index')
-            else:
-                print("User not found")
                 
         else:
             return render(request, 'example/login.html', {'form': form1})
@@ -86,6 +82,10 @@ def tasks(request):
     }
 
     return render(request, 'example/tasks.html', page)
+
+@permission_required('example.can_enter_admin_panel', login_url='index', raise_exception=True)
+def perms(request):
+    return render(request, 'example/perms.html')
 
 def remove(request, item_id):
     item = Todo.objects.get(id=item_id)
