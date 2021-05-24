@@ -87,6 +87,7 @@ def tasks(request):
 def perms(request):
     return render(request, 'example/perms.html')
 
+@permission_required('example.delete_todo', login_url='index')
 def remove(request, item_id):
     item = Todo.objects.get(id=item_id)
     item.delete()
