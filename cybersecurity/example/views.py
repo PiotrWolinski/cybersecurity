@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.models import Group
 
 from .forms import TodoForm
 from .models import Todo
@@ -51,7 +52,8 @@ def register(request):
             raw_password = form.cleaned_data.get('password1')
             user = authenticate(username=username, password=raw_password)
             login(request, user)
-
+            user_group = Group.objects.get(name='User')
+            user.groups.add(user_group)
             return redirect('index')
     else:
         form = UserCreationForm()
