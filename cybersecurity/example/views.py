@@ -6,6 +6,7 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.models import Group
+from django_otp.decorators import otp_required
 
 from .forms import TodoForm
 from .models import Todo
@@ -16,29 +17,29 @@ def index(request):
 
     return render(request, 'example/index.html')
 
-def login_view(request):
-    if request.user.is_authenticated:
-        return redirect('tasks')
+# def login_view(request):
+#     if request.user.is_authenticated:
+#         return redirect('tasks')
     
-    if request.method == 'GET':
-        form = AuthenticationForm()
-        return render(request, 'example/login.html', {'form': form})
+#     if request.method == 'GET':
+#         form = AuthenticationForm()
+#         return render(request, 'example/login.html', {'form': form})
 
-    if request.method == 'POST':
-        form1 = AuthenticationForm(data=request.POST)
-        if form1.is_valid():
-            username = form1.cleaned_data.get('username')
-            raw_password = form1.cleaned_data.get('password')
-            user = authenticate(username=username, password=raw_password)
-            if user is not None:
-                login(request, user)
-                return redirect('index')
+#     if request.method == 'POST':
+#         form1 = AuthenticationForm(data=request.POST)
+#         if form1.is_valid():
+#             username = form1.cleaned_data.get('username')
+#             raw_password = form1.cleaned_data.get('password')
+#             user = authenticate(username=username, password=raw_password)
+#             if user is not None:
+#                 login(request, user)
+#                 return redirect('index')
                 
-        else:
-            return render(request, 'example/login.html', {'form': form1})
+#         else:
+#             return render(request, 'example/login.html', {'form': form1})
 
 
-    return redirect('login_view')
+#     return redirect('login_view')
 
 def register(request):
     if request.user.is_authenticated:   
@@ -51,7 +52,7 @@ def register(request):
             username = form.cleaned_data.get('username')
             raw_password = form.cleaned_data.get('password1')
             user = authenticate(username=username, password=raw_password)
-            login(request, user)
+            #login(request, user)
             user_group = Group.objects.get(name='User')
             user.groups.add(user_group)
             return redirect('index')
@@ -65,7 +66,7 @@ def logout_request(request):
 
     return redirect('index')
 
-@login_required(login_url='index')
+@login_required(login_url='two_factor:login')
 def tasks(request):
     items = Todo.objects.order_by('-date')
 
@@ -85,11 +86,11 @@ def tasks(request):
 
     return render(request, 'example/tasks.html', page)
 
-@permission_required('example.can_enter_admin_panel', login_url='index', raise_exception=True)
+@permission_required('example.can_enter_admin_panel', login_url='two_factor:login')
 def perms(request):
     return render(request, 'example/perms.html')
 
-@permission_required('example.delete_todo', login_url='index')
+@permission_required('example.delete_todo', login_url='two_factor:login')
 def remove(request, item_id):
     item = Todo.objects.get(id=item_id)
     item.delete()
